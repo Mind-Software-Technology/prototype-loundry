@@ -3188,3 +3188,13 @@ body { background: var(--page-bg); }
 .tkc-id, .tkc-pay-group { align-items: center; }
 .tkc-nota, .tkc-status, .tkc-pay, .tkc-paynow { align-self: center; line-height: 1.3; }
 .tkc-pay-group { margin-left: auto; justify-content: flex-end; }
+
+/* Header kartu selalu satu baris agar isi kartu sejajar */
+.tkc-head { flex-wrap: nowrap; }
+.tkc-id { flex: 1; min-width: 0; flex-wrap: nowrap; }
+.tkc-nota { font-size: 0.8125rem; white-space: nowrap; }
+.tkc-pay { flex-shrink: 0; margin-left: auto; }
+.tkc-pay-btn { border: 1px solid currentColor; cursor: pointer; font-family: inherit; }
+.tkc-pay-btn:hover { filter: brightness(0.95); }
+.tkc-dates { row-gap: 2px; }
+.tkc-detail { min-height: 96px; }

@@ -126,16 +126,21 @@ export const OrdersView: React.FC = () => {
                     {status.label}
                   </span>
                 </div>
-                <div className="tkc-pay-group">
+                {order.paymentStatus === 'paid' ? (
                   <span className="tkc-pay" style={{ color: pay.color, background: pay.bg }}>
                     {pay.label}
                   </span>
-                  {order.paymentStatus !== 'paid' && (
-                    <button type="button" className="tkc-paynow" onClick={() => handleMarkPaid(order)}>
-                      Bayar Sekarang
-                    </button>
-                  )}
-                </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="tkc-pay tkc-pay-btn"
+                    style={{ color: pay.color, background: pay.bg }}
+                    onClick={() => handleMarkPaid(order)}
+                    title="Klik untuk menandai pesanan ini lunas"
+                  >
+                    {pay.label} &middot; Bayar
+                  </button>
+                )}
               </header>
 
               <div className="tkc-body">
