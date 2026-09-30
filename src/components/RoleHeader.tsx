@@ -9,6 +9,8 @@ const TAB_LABEL: Partial<Record<AppTab, string>> = {
   orders: 'Pelacakan',
   report: 'Laporan',
   services: 'Layanan',
+  tracking: 'Cek Status',
+  settings: 'Pengaturan',
 };
 
 /** Navbar sederhana untuk semua role — menu hanya menampilkan tab sesuai hak akses. */

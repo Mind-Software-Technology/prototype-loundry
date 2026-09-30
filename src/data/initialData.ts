@@ -1,4 +1,14 @@
-import { LaundryService, Customer, Order, RoleDefinition } from '@/types/laundry';
+import {
+  LaundryService,
+  Customer,
+  Order,
+  RoleDefinition,
+  ModuleDefinition,
+  ModuleTab,
+  AppSettings,
+  AppTab,
+  UserRole,
+} from '@/types/laundry';
 
 export const ROLE_DEFINITIONS: RoleDefinition[] = [
   {
@@ -34,6 +44,38 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     defaultTab: 'tracking',
   },
 ];
+
+export const MODULE_DEFINITIONS: ModuleDefinition[] = [
+  { id: 'report', label: 'Laporan', description: 'Ringkasan omzet, transaksi, layanan terlaris, dan status pesanan.' },
+  { id: 'pos', label: 'Kasir (POS)', description: 'Terminal transaksi: pilih layanan, pelanggan, dan pembayaran.' },
+  { id: 'orders', label: 'Pelacakan Pesanan', description: 'Perbarui tahap pengerjaan, status bayar, cetak struk, dan WhatsApp.' },
+  { id: 'services', label: 'Layanan & Tarif', description: 'Tambah, ubah, dan hapus layanan laundry beserta tarifnya.' },
+  { id: 'tracking', label: 'Cek Status (Pelanggan)', description: 'Pencarian status cucian dengan nomor nota, nomor member, atau no. HP.' },
+];
+
+// Urutan menu di navbar
+export const TAB_ORDER: AppTab[] = ['report', 'pos', 'orders', 'services', 'tracking', 'settings'];
+
+const isModule = (t: AppTab): t is ModuleTab => MODULE_DEFINITIONS.some((m) => m.id === t);
+
+export const DEFAULT_SETTINGS: AppSettings = {
+  enabledModules: { pos: true, orders: true, services: true, report: true, tracking: true },
+  enabledRoles: { owner: true, kasir: true, kurir: true, pelanggan: true },
+  permissions: ROLE_DEFINITIONS.reduce((acc, r) => {
+    acc[r.id] = r.allowedTabs.filter(isModule);
+    return acc;
+  }, {} as Record<UserRole, ModuleTab[]>),
+};
+
+/** Gabungkan definisi role dengan pengaturan owner -> role aktif beserta menu yang boleh diakses. */
+export const resolveRoles = (settings: AppSettings): RoleDefinition[] =>
+  ROLE_DEFINITIONS.filter((r) => r.id === 'owner' || settings.enabledRoles[r.id]).flatMap((r) => {
+    const modules = (settings.permissions[r.id] ?? []).filter((m) => settings.enabledModules[m]);
+    const tabs: AppTab[] = r.id === 'owner' ? [...modules, 'settings'] : modules;
+    const allowedTabs = TAB_ORDER.filter((t) => tabs.includes(t));
+    if (allowedTabs.length === 0) return [];
+    return [{ ...r, allowedTabs, defaultTab: allowedTabs.includes(r.defaultTab) ? r.defaultTab : allowedTabs[0] }];
+  });
 
 export const INITIAL_SERVICES: LaundryService[] = [
   // Kiloan

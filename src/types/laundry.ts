@@ -1,6 +1,6 @@
 export type UserRole = 'owner' | 'kasir' | 'kurir' | 'pelanggan';
 
-export type AppTab = 'landing' | 'pos' | 'orders' | 'customers' | 'services' | 'tracking' | 'report';
+export type AppTab = 'landing' | 'pos' | 'orders' | 'customers' | 'services' | 'tracking' | 'report' | 'settings';
 
 export interface RoleDefinition {
   id: UserRole;
@@ -90,4 +90,20 @@ export interface Order {
   specialNotes?: string;
   cashierName: string;
   completedAt?: string;
+}
+
+// Menu (modul) yang bisa diaktifkan/dinonaktifkan oleh owner
+export type ModuleTab = 'pos' | 'orders' | 'services' | 'report' | 'tracking';
+
+export interface ModuleDefinition {
+  id: ModuleTab;
+  label: string;
+  description: string;
+}
+
+// Pengaturan langganan/fitur per usaha (SaaS): menu aktif, role aktif, dan hak akses per role
+export interface AppSettings {
+  enabledModules: Record<ModuleTab, boolean>;
+  enabledRoles: Record<UserRole, boolean>;
+  permissions: Record<UserRole, ModuleTab[]>;
 }

@@ -10,6 +10,7 @@ import { ServicesView } from '@/components/ServicesView';
 import { ThermalReceiptModal } from '@/components/ThermalReceiptModal';
 import { RoleSelectScreen } from '@/components/RoleSelectScreen';
 import { ReportView } from '@/components/ReportView';
+import { SettingsView } from '@/components/SettingsView';
 import { RoleHeader } from '@/components/RoleHeader';
 import { TrackingView } from '@/components/TrackingView';
 
@@ -35,6 +36,7 @@ export default function Home() {
       <main className="main-content-body">
         {safeTab === 'tracking' && <TrackingView />}
         {safeTab === 'report' && <ReportView />}
+        {safeTab === 'settings' && <SettingsView />}
         {safeTab === 'landing' && <WashyLanding />}
         {safeTab === 'pos' && (
           <div className="pos-fullscreen-container">

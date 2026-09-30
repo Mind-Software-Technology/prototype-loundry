@@ -12,8 +12,9 @@ import {
   UserRole,
   RoleDefinition,
   AppTab,
+  AppSettings,
 } from '@/types/laundry';
-import { INITIAL_SERVICES, INITIAL_CUSTOMERS, INITIAL_ORDERS, ROLE_DEFINITIONS } from '@/data/initialData';
+import { INITIAL_SERVICES, INITIAL_CUSTOMERS, INITIAL_ORDERS, DEFAULT_SETTINGS, resolveRoles } from '@/data/initialData';
 
 interface LaundryContextType {
   // Role / Hak Akses (prototype only — akan dihilangkan di versi web asli,
@@ -22,6 +23,11 @@ interface LaundryContextType {
   selectRole: (role: UserRole) => void;
   switchRole: () => void;
   availableRoles: RoleDefinition[];
+
+  // Pengaturan SaaS (menu aktif, role aktif, hak akses) — dikelola owner
+  settings: AppSettings;
+  updateSettings: (next: AppSettings) => void;
+  resetSettings: () => void;
 
   // Navigation
   activeTab: AppTab;
@@ -107,10 +113,13 @@ const STORAGE_KEYS = {
   CUSTOMERS: 'laundry_pos_customers_v1',
   ORDERS: 'laundry_pos_orders_v1',
   ROLE: 'laundry_pos_role_v1',
+  SETTINGS: 'laundry_pos_settings_v1',
 };
 
 export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  const availableRoles = resolveRoles(settings);
   const [activeTab, setActiveTab] = useState<AppTab>('landing');
   const [services, setServices] = useState<LaundryService[]>(INITIAL_SERVICES);
   const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
@@ -132,7 +141,18 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (savedOrders) setOrders(JSON.parse(savedOrders));
 
       const savedRole = localStorage.getItem(STORAGE_KEYS.ROLE);
-      const roleDef = ROLE_DEFINITIONS.find((r) => r.id === savedRole);
+      let loadedSettings = DEFAULT_SETTINGS;
+      const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings) as Partial<AppSettings>;
+        loadedSettings = {
+          enabledModules: { ...DEFAULT_SETTINGS.enabledModules, ...parsed.enabledModules },
+          enabledRoles: { ...DEFAULT_SETTINGS.enabledRoles, ...parsed.enabledRoles },
+          permissions: { ...DEFAULT_SETTINGS.permissions, ...parsed.permissions },
+        };
+        setSettings(loadedSettings);
+      }
+      const roleDef = resolveRoles(loadedSettings).find((r) => r.id === savedRole);
       if (roleDef) {
         setCurrentRole(roleDef.id);
         setActiveTab(roleDef.defaultTab);
@@ -172,10 +192,22 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [orders, isLoaded]);
 
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    } catch (e) {
+      console.error('Error saving settings', e);
+    }
+  }, [settings, isLoaded]);
+
+  const updateSettings = (next: AppSettings) => setSettings(next);
+  const resetSettings = () => setSettings(DEFAULT_SETTINGS);
+
   // Role / Hak Akses operations
   const selectRole = (role: UserRole) => {
     setCurrentRole(role);
-    setActiveTab(ROLE_DEFINITIONS.find((r) => r.id === role)?.defaultTab ?? 'landing');
+    setActiveTab(availableRoles.find((r) => r.id === role)?.defaultTab ?? 'landing');
     try {
       localStorage.setItem(STORAGE_KEYS.ROLE, role);
     } catch (e) {
@@ -435,7 +467,10 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         currentRole,
         selectRole,
         switchRole,
-        availableRoles: ROLE_DEFINITIONS,
+        availableRoles,
+        settings,
+        updateSettings,
+        resetSettings,
         activeTab,
         setActiveTab,
         services,
