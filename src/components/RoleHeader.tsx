@@ -3,15 +3,15 @@
 import React from 'react';
 import { useLaundry } from '@/context/LaundryContext';
 import { AppTab } from '@/types/laundry';
-import { Sparkles, LogOut } from 'lucide-react';
 
 const TAB_LABEL: Partial<Record<AppTab, string>> = {
   pos: 'Kasir',
   orders: 'Pelacakan',
   report: 'Laporan',
+  services: 'Layanan',
 };
 
-/** Header ringkas untuk semua role — menu hanya menampilkan tab sesuai hak akses. */
+/** Navbar sederhana untuk semua role — menu hanya menampilkan tab sesuai hak akses. */
 export const RoleHeader: React.FC = () => {
   const { currentRole, availableRoles, switchRole, todayStats, activeTab, setActiveTab } = useLaundry();
   const roleDef = availableRoles.find((r) => r.id === currentRole);
@@ -22,39 +22,39 @@ export const RoleHeader: React.FC = () => {
   };
 
   return (
-    <header className="role-header">
-      <div className="role-header-inner">
-        <div className="washy-brand-wrapper">
-          <div className="washy-logo-box">
-            <Sparkles size={22} color="#ffffff" />
-          </div>
-          <div className="washy-text-group">
-            <span className="washy-logo-name">Washy</span>
-            <span className="washy-logo-subline">LAUNDRY SERVICE</span>
-          </div>
+    <header className="nav-bar">
+      <div className="nav-inner">
+        <div className="nav-brand">
+          <span className="nav-brand-mark">W</span>
+          <span className="nav-brand-name">Washy <span className="nav-brand-sub">Laundry</span></span>
         </div>
 
         {menuTabs.length > 1 && (
-          <nav className="role-header-nav">
+          <nav className="nav-tabs">
             {menuTabs.map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`role-nav-btn ${activeTab === tab ? 'active' : ''}`}
+                className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
               >
                 {TAB_LABEL[tab]}
-                {tab === 'orders' && <span className="role-nav-count">{todayStats.activeQueue}</span>}
+                {tab === 'orders' && todayStats.activeQueue > 0 && (
+                  <span className="nav-tab-count">{todayStats.activeQueue}</span>
+                )}
               </button>
             ))}
           </nav>
         )}
 
-        <div className="role-header-right">
-          <span className="role-header-badge">{roleDef?.label}</span>
-          <button type="button" onClick={handleSwitchRole} className="role-header-logout">
-            <LogOut size={15} />
-            <span>{currentRole === 'pelanggan' ? 'Keluar' : 'Ganti Role'}</span>
+        <div className="nav-user">
+          <span className="nav-avatar" aria-hidden>{(roleDef?.label ?? '?').charAt(0)}</span>
+          <div className="nav-user-text">
+            <small>Masuk sebagai</small>
+            <strong>{roleDef?.label}</strong>
+          </div>
+          <button type="button" onClick={handleSwitchRole} className="nav-logout">
+            {currentRole === 'pelanggan' ? 'Keluar' : 'Ganti role'}
           </button>
         </div>
       </div>

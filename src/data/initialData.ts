@@ -4,9 +4,9 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
   {
     id: 'owner',
     label: 'Owner / Admin',
-    description: 'Melihat Laporan usaha dan mengelola Pelacakan pesanan.',
+    description: 'Melihat Laporan usaha, mengelola Pelacakan pesanan, dan menambah/mengubah Layanan.',
     iconName: 'Crown',
-    allowedTabs: ['report', 'orders'],
+    allowedTabs: ['report', 'orders', 'services'],
     defaultTab: 'report',
   },
   {

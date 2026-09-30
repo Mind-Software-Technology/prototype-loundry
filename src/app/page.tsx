@@ -41,11 +41,7 @@ export default function Home() {
             <PosView />
           </div>
         )}
-        {safeTab === 'orders' && (
-          <div className="main-app-container">
-            <OrdersView />
-          </div>
-        )}
+        {safeTab === 'orders' && <OrdersView />}
         {safeTab === 'customers' && (
           <div className="main-app-container">
             <CustomersView />

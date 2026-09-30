@@ -23,6 +23,7 @@ export const ServicesView: React.FC = () => {
   const { services, addService, deleteService, updateService } = useLaundry();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form states
   const [name, setName] = useState('');
@@ -47,7 +48,7 @@ export const ServicesView: React.FC = () => {
       return;
     }
 
-    addService({
+    const payload = {
       name: name.trim(),
       category,
       unit,
@@ -56,11 +57,46 @@ export const ServicesView: React.FC = () => {
       iconName: category === 'express' ? 'Zap' : (category === 'kiloan' ? 'Shirt' : 'Sparkles'),
       description: description.trim() || 'Layanan laundry berkualitas tinggi.',
       minWeight: unit === 'kg' ? 2 : undefined,
-    });
+    };
 
+    if (editingId) {
+      updateService(editingId, payload);
+    } else {
+      addService(payload);
+    }
+    closeModal();
+  };
+
+  const resetForm = () => {
     setName('');
+    setCategory('kiloan');
+    setUnit('kg');
+    setPrice(8000);
+    setEstimatedHours(48);
     setDescription('');
+  };
+
+  const openAdd = () => {
+    resetForm();
+    setEditingId(null);
+    setShowAddModal(true);
+  };
+
+  const openEdit = (srv: LaundryService) => {
+    setEditingId(srv.id);
+    setName(srv.name);
+    setCategory(srv.category);
+    setUnit(srv.unit);
+    setPrice(srv.price);
+    setEstimatedHours(srv.estimatedHours);
+    setDescription(srv.description);
+    setShowAddModal(true);
+  };
+
+  const closeModal = () => {
     setShowAddModal(false);
+    setEditingId(null);
+    resetForm();
   };
 
   const handleDelete = (id: string, sName: string) => {
@@ -86,7 +122,7 @@ export const ServicesView: React.FC = () => {
 
         <button
           type="button"
-          onClick={() => setShowAddModal(true)}
+          onClick={openAdd}
           className="btn-add-service-main"
         >
           <Plus size={18} />
@@ -133,13 +169,22 @@ export const ServicesView: React.FC = () => {
                   <td>
                     <div className="est-hours-badge">
                       <Clock size={13} />
-                      <span>{srv.estimatedHours} Jam ({Math.round(srv.estimatedHours / 24)} hari)</span>
+                      <span>{srv.estimatedHours} Jam{srv.estimatedHours >= 24 ? ` (${Math.round(srv.estimatedHours / 24)} hari)` : ''}</span>
                     </div>
                   </td>
                   <td>
                     <strong className="srv-price-text">{formatRupiah(srv.price)}</strong>
                   </td>
                   <td className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => openEdit(srv)}
+                      className="btn-edit-row"
+                      title="Ubah layanan"
+                      aria-label="Ubah layanan"
+                    >
+                      <Edit3 size={16} />
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleDelete(srv.id, srv.name)}
@@ -166,13 +211,13 @@ export const ServicesView: React.FC = () => {
                   <Tag size={20} color="#0284c7" />
                 </div>
                 <div>
-                  <h3 className="modal-title">Tambah Layanan Laundry Baru</h3>
-                  <p className="modal-subtitle">Tentukan nama, tarif, dan durasi pengerjaan</p>
+                  <h3 className="modal-title">{editingId ? 'Ubah Layanan' : 'Tambah Layanan Laundry Baru'}</h3>
+                  <p className="modal-subtitle">{editingId ? 'Perbarui nama, tarif, atau durasi layanan' : 'Tentukan nama, tarif, dan durasi pengerjaan'}</p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => setShowAddModal(false)}
+                onClick={closeModal}
                 className="btn-icon-close"
               >
                 <X size={20} />
@@ -264,14 +309,14 @@ export const ServicesView: React.FC = () => {
               <div className="modal-footer">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={closeModal}
                   className="btn-secondary"
                 >
                   Batal
                 </button>
                 <button type="submit" className="btn-primary">
                   <Check size={18} />
-                  Simpan Tarif Layanan
+                  {editingId ? 'Simpan Perubahan' : 'Simpan Tarif Layanan'}
                 </button>
               </div>
             </form>
