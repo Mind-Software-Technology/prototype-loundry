@@ -3264,3 +3264,12 @@ body { background: var(--page-bg); }
 .brand-swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #cbd5e1; cursor: pointer; }
 .brand-swatch.active { box-shadow: 0 0 0 2px var(--accent); }
 .brand-color-input { width: 44px; height: 36px; padding: 0; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; cursor: pointer; }
+
+/* Kartu Pelacakan: header boleh turun baris, stepper tahapan dibagi rata */
+.tkc-head { flex-wrap: wrap; row-gap: var(--space-2); }
+.tkc-id { flex: 1 1 auto; flex-wrap: wrap; row-gap: var(--space-2); }
+.tkc-pay { margin-left: auto; }
+.trk-stepper { padding: var(--space-2) 0 0; }
+.trk-stepper .stepper-step { flex: 1 1 0; min-width: 0; }
+.trk-stepper .step-label { white-space: normal; line-height: 1.25; font-size: 0.7rem; padding: 0 2px; }
+.trk-stepper::before { left: calc(100% / 12); right: calc(100% / 12); }
