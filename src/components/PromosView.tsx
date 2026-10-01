@@ -305,7 +305,7 @@ export const PromosView: React.FC = () => {
 
               <div className="form-grid-2">
                 <div className="form-group">
-                  <label className="form-label">Minimal Belanja (Rp)</label>
+                  <label className="form-label">Minimal Belanja (Rp) — opsional</label>
                   <input
                     type="number"
                     min="0"
@@ -318,7 +318,7 @@ export const PromosView: React.FC = () => {
                 </div>
                 {form.discountType === 'percent' && (
                   <div className="form-group">
-                    <label className="form-label">Maks. Potongan (Rp)</label>
+                    <label className="form-label">Maks. Potongan (Rp) — opsional</label>
                     <input
                       type="number"
                       min="0"
