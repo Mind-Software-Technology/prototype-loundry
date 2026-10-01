@@ -3250,3 +3250,8 @@ body { background: var(--page-bg); }
 /* Promo / voucher di kasir */
 .promo-choice-list { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.4rem; }
 .promo-choice { display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.78rem; cursor: pointer; }
+
+/* Modal tinggi: batasi ke tinggi layar, isi form digulir (header tetap terlihat) */
+.modal-card { display: flex; flex-direction: column; max-height: calc(100dvh - 2rem); }
+.modal-card > .modal-header { flex-shrink: 0; }
+.modal-card > .modal-body { overflow-y: auto; min-height: 0; }
