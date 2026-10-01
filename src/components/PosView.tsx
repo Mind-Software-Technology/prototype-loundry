@@ -32,6 +32,7 @@ export const PosView: React.FC = () => {
   // Customer State
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(customers[0] || null);
   const [customerSearch, setCustomerSearch] = useState('');
+  const [customerListOpen, setCustomerListOpen] = useState(false);
   const [isAddingNewCustomer, setIsAddingNewCustomer] = useState(false);
   const [newCustName, setNewCustName] = useState('');
   const [newCustPhone, setNewCustPhone] = useState('');
@@ -59,7 +60,7 @@ export const PosView: React.FC = () => {
 
   // Filter Customers
   const filteredCustomers = useMemo(() => {
-    if (!customerSearch.trim()) return [];
+    if (!customerSearch.trim()) return customers;
     return customers.filter(
       (c) =>
         c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
@@ -361,24 +362,31 @@ Simpan
                 <div className="customer-search-input-wrap">
                   <input
                     type="text"
-                    placeholder="Ketik nomor member, nama, atau no. telepon..."
+                    placeholder="Pilih dari daftar atau ketik nomor member, nama, no. telepon..."
                     value={customerSearch}
-                    onChange={(e) => setCustomerSearch(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerSearch(e.target.value);
+                      setCustomerListOpen(true);
+                    }}
+                    onFocus={() => setCustomerListOpen(true)}
+                    onBlur={() => setCustomerListOpen(false)}
                     className="customer-search-field"
                   />
                 </div>
 
-                {customerSearch.trim() && (
+                {customerListOpen && (
                   <div className="customer-dropdown-menu">
                     {filteredCustomers.length > 0 ? (
                       filteredCustomers.map((c) => (
                         <div
                           key={c.id}
                           className="customer-dropdown-item"
+                          onMouseDown={(e) => e.preventDefault()}
                           onClick={() => {
                             setSelectedCustomer(c);
                             setCustomerNotice(null);
                             setCustomerSearch('');
+                            setCustomerListOpen(false);
                           }}
                         >
                           <span className="dropdown-name">
@@ -389,9 +397,10 @@ Simpan
                       ))
                     ) : (
                       <div className="dropdown-empty-msg">
-                        Pelanggan tidak ditemukan.{' '}
+                        {customerSearch.trim() ? 'Pelanggan tidak ditemukan.' : 'Belum ada pelanggan terdaftar.'}{' '}
                         <button
                           type="button"
+                          onMouseDown={(e) => e.preventDefault()}
                           onClick={() => {
                             setIsAddingNewCustomer(true);
                             setNewCustName(customerSearch);
