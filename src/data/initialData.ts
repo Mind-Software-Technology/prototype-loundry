@@ -6,6 +6,7 @@ import {
   ModuleDefinition,
   ModuleTab,
   AppSettings,
+  BrandingSettings,
   AppTab,
   UserRole,
 } from '@/types/laundry';
@@ -58,7 +59,14 @@ export const TAB_ORDER: AppTab[] = ['report', 'pos', 'orders', 'services', 'trac
 
 const isModule = (t: AppTab): t is ModuleTab => MODULE_DEFINITIONS.some((m) => m.id === t);
 
+export const DEFAULT_BRANDING: BrandingSettings = {
+  businessName: 'Washy Laundry',
+  logo: '',
+  primaryColor: '#0052cc',
+};
+
 export const DEFAULT_SETTINGS: AppSettings = {
+  branding: DEFAULT_BRANDING,
   enabledModules: { pos: true, orders: true, services: true, report: true, tracking: true },
   enabledRoles: { owner: true, kasir: true, kurir: true, pelanggan: true },
   permissions: ROLE_DEFINITIONS.reduce((acc, r) => {

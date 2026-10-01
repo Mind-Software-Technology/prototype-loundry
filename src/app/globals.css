@@ -3255,3 +3255,12 @@ body { background: var(--page-bg); }
 .modal-card { display: flex; flex-direction: column; max-height: calc(100dvh - 2rem); }
 .modal-card > .modal-header { flex-shrink: 0; }
 .modal-card > .modal-body { overflow-y: auto; min-height: 0; }
+
+/* Logo usaha unggahan owner */
+.brand-logo-img { object-fit: contain; border-radius: 8px; flex-shrink: 0; display: block; }
+.brand-set-row { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+.brand-set-preview { width: 64px; height: 64px; border: 1px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
+.brand-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.brand-swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #cbd5e1; cursor: pointer; }
+.brand-swatch.active { box-shadow: 0 0 0 2px var(--accent); }
+.brand-color-input { width: 44px; height: 36px; padding: 0; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; cursor: pointer; }

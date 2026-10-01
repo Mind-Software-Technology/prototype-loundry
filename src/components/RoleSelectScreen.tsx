@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { useLaundry } from '@/context/LaundryContext';
+import { BrandMark } from './BrandMark';
+import { displayBrandName } from '@/utils/branding';
 import { Crown, ShoppingBag, Truck, User, Sparkles, ArrowRight } from 'lucide-react';
 
 const ROLE_ICONS = {
@@ -12,18 +14,17 @@ const ROLE_ICONS = {
 };
 
 export const RoleSelectScreen: React.FC = () => {
-  const { availableRoles, selectRole } = useLaundry();
+  const { availableRoles, selectRole, settings } = useLaundry();
 
   return (
     <div className="role-select-root">
       <div className="role-select-card">
         <div className="role-select-brand">
-          <div className="washy-logo-box">
+          <BrandMark boxClassName="washy-logo-box" size={40}>
             <Sparkles size={24} color="#ffffff" />
-          </div>
+          </BrandMark>
           <div className="washy-text-group">
-            <span className="washy-logo-name">Washy</span>
-            <span className="washy-logo-subline">LAUNDRY SERVICE</span>
+            <span className="washy-logo-name">{displayBrandName(settings.branding)}</span>
           </div>
         </div>
 

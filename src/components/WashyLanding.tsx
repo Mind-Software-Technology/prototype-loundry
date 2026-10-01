@@ -3,6 +3,8 @@
 import React from 'react';
 import { useLaundry } from '@/context/LaundryContext';
 import { formatRupiah } from '@/utils/formatters';
+import { BrandMark } from './BrandMark';
+import { displayBrandName } from '@/utils/branding';
 import { 
   Truck, 
   Sparkles, 
@@ -30,7 +32,7 @@ import {
 } from 'lucide-react';
 
 export const WashyLanding: React.FC = () => {
-  const { setActiveTab } = useLaundry();
+  const { setActiveTab, settings } = useLaundry();
 
   const servicesList = [
     {
@@ -493,12 +495,11 @@ export const WashyLanding: React.FC = () => {
         <div className="washy-container footer-content-grid">
           <div className="footer-col-about">
             <div className="footer-logo-lockup">
-              <div className="footer-logo-icon">
+              <BrandMark boxClassName="footer-logo-icon" size={36}>
                 <Sparkles size={20} color="#fff" />
-              </div>
+              </BrandMark>
               <div>
-                <span className="footer-logo-title">Washy</span>
-                <span className="footer-logo-tag">LAUNDRY SERVICE</span>
+                <span className="footer-logo-title">{displayBrandName(settings.branding)}</span>
               </div>
             </div>
             <p className="footer-about-text">
@@ -551,7 +552,7 @@ export const WashyLanding: React.FC = () => {
 
         <div className="footer-bottom-copyright">
           <div className="washy-container">
-            <p>© 2026 Washy LAUNDRY SERVICE. All Rights Reserved.</p>
+            <p>© 2026 {displayBrandName(settings.branding)}. All Rights Reserved.</p>
           </div>
         </div>
       </footer>

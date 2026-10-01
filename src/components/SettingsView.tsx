@@ -1,9 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useLaundry } from '@/context/LaundryContext';
 import { MODULE_DEFINITIONS, ROLE_DEFINITIONS } from '@/data/initialData';
-import { AppSettings, ModuleTab, UserRole } from '@/types/laundry';
+import { AppSettings, BrandingSettings, ModuleTab, UserRole } from '@/types/laundry';
+import { DEFAULT_BRANDING } from '@/data/initialData';
+import { isTooLight, resizeLogo } from '@/utils/branding';
+
+const COLOR_PRESETS = ['#0052cc', '#0e7490', '#059669', '#7c3aed', '#db2777', '#dc2626', '#ea580c', '#334155'];
 
 interface SwitchProps {
   checked: boolean;
@@ -28,6 +32,26 @@ const Switch: React.FC<SwitchProps> = ({ checked, onChange, disabled, label }) =
 export const SettingsView: React.FC = () => {
   const { settings, updateSettings, resetSettings } = useLaundry();
 
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const { branding } = settings;
+
+  const setBranding = (fields: Partial<BrandingSettings>) =>
+    updateSettings({ ...settings, branding: { ...branding, ...fields } });
+
+  const handleLogoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setLogoError(null);
+    if (!file.type.startsWith('image/')) return setLogoError('File harus berupa gambar (PNG, JPG, SVG, dll).');
+    if (file.size > 5 * 1024 * 1024) return setLogoError('Ukuran gambar maksimal 5 MB.');
+    try {
+      setBranding({ logo: await resizeLogo(file) });
+    } catch {
+      setLogoError('Gambar tidak bisa dibaca. Coba file lain.');
+    }
+  };
+
   const setModule = (id: ModuleTab, value: boolean) =>
     updateSettings({ ...settings, enabledModules: { ...settings.enabledModules, [id]: value } });
 
@@ -41,7 +65,7 @@ export const SettingsView: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (confirm('Kembalikan semua pengaturan menu, role, dan hak akses ke default?')) resetSettings();
+    if (confirm('Kembalikan semua pengaturan tampilan, menu, role, dan hak akses ke default?')) resetSettings();
   };
 
   const activeModules = MODULE_DEFINITIONS.filter((m) => settings.enabledModules[m.id]).length;
@@ -61,6 +85,86 @@ export const SettingsView: React.FC = () => {
           <button type="button" className="set-btn" onClick={handleReset}>Kembalikan default</button>
         </div>
       </div>
+
+      <section className="set-card">
+        <div className="set-card-head">
+          <h2>Identitas &amp; tampilan usaha</h2>
+          <p>Nama, logo, dan warna utama akan tampil di seluruh aplikasi dan nota.</p>
+        </div>
+        <ul className="set-list">
+          <li className="set-row">
+            <div className="set-row-text">
+              <strong>Nama usaha</strong>
+              <span>Tampil di header, layar masuk, website, dan nota.</span>
+            </div>
+            <input
+              type="text"
+              className="form-input"
+              style={{ maxWidth: 260 }}
+              value={branding.businessName}
+              maxLength={40}
+              placeholder={DEFAULT_BRANDING.businessName}
+              onChange={(e) => setBranding({ businessName: e.target.value })}
+            />
+          </li>
+          <li className="set-row">
+            <div className="set-row-text">
+              <strong>Logo</strong>
+              <span>Unggah gambar (otomatis diperkecil). Hapus untuk memakai ikon bawaan.</span>
+              {logoError && <span className="text-red">{logoError}</span>}
+            </div>
+            <div className="brand-set-row">
+              <div className="brand-set-preview">
+                {branding.logo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={branding.logo} alt="Logo usaha" className="brand-logo-img" style={{ width: 56, height: 56 }} />
+                ) : (
+                  <small>Belum ada</small>
+                )}
+              </div>
+              <label className="set-btn" style={{ cursor: 'pointer' }}>
+                Unggah logo
+                <input type="file" accept="image/*" onChange={handleLogoFile} hidden />
+              </label>
+              {branding.logo && (
+                <button type="button" className="set-btn" onClick={() => setBranding({ logo: '' })}>
+                  Hapus logo
+                </button>
+              )}
+            </div>
+          </li>
+          <li className="set-row">
+            <div className="set-row-text">
+              <strong>Warna utama</strong>
+              <span>Dipakai untuk tombol, menu aktif, dan aksen.</span>
+              {isTooLight(branding.primaryColor) && (
+                <span className="text-red">Warna terlalu terang, teks putih pada tombol akan sulit dibaca.</span>
+              )}
+            </div>
+            <div className="brand-set-row">
+              <div className="brand-swatches">
+                {COLOR_PRESETS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className={`brand-swatch ${branding.primaryColor.toLowerCase() === c ? 'active' : ''}`}
+                    style={{ background: c }}
+                    onClick={() => setBranding({ primaryColor: c })}
+                    aria-label={`Pilih warna ${c}`}
+                  />
+                ))}
+              </div>
+              <input
+                type="color"
+                className="brand-color-input"
+                value={branding.primaryColor}
+                onChange={(e) => setBranding({ primaryColor: e.target.value })}
+                aria-label="Pilih warna kustom"
+              />
+            </div>
+          </li>
+        </ul>
+      </section>
 
       <section className="set-card">
         <div className="set-card-head">

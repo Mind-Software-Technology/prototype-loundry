@@ -17,6 +17,7 @@ import {
   Promo,
 } from '@/types/laundry';
 import { INITIAL_SERVICES, INITIAL_CUSTOMERS, INITIAL_ORDERS, DEFAULT_SETTINGS, resolveRoles } from '@/data/initialData';
+import { brandCssVars, displayBrandName } from '@/utils/branding';
 
 interface LaundryContextType {
   // Role / Hak Akses (prototype only — akan dihilangkan di versi web asli,
@@ -169,6 +170,7 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (savedSettings) {
         const parsed = JSON.parse(savedSettings) as Partial<AppSettings>;
         loadedSettings = {
+          branding: { ...DEFAULT_SETTINGS.branding, ...parsed.branding },
           enabledModules: { ...DEFAULT_SETTINGS.enabledModules, ...parsed.enabledModules },
           enabledRoles: { ...DEFAULT_SETTINGS.enabledRoles, ...parsed.enabledRoles },
           permissions: { ...DEFAULT_SETTINGS.permissions, ...parsed.permissions },
@@ -232,6 +234,13 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.error('Error saving settings', e);
     }
   }, [settings, isLoaded]);
+
+  // Terapkan warna & nama usaha ke seluruh halaman
+  useEffect(() => {
+    const root = document.documentElement;
+    Object.entries(brandCssVars(settings.branding.primaryColor)).forEach(([k, v]) => root.style.setProperty(k, v));
+    document.title = `${displayBrandName(settings.branding)} - Sistem Kasir & Manajemen Laundry`;
+  }, [settings.branding]);
 
   const updateSettings = (next: AppSettings) => setSettings(next);
   const resetSettings = () => setSettings(DEFAULT_SETTINGS);

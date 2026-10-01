@@ -3,10 +3,11 @@
 import React from 'react';
 import { useLaundry } from '@/context/LaundryContext';
 import { formatRupiah, getPaymentStatusLabel, generateWhatsAppMessage, openWhatsApp } from '@/utils/formatters';
+import { displayBrandName } from '@/utils/branding';
 import { Printer, MessageCircle, X, Check, Scissors } from 'lucide-react';
 
 export const ThermalReceiptModal: React.FC = () => {
-  const { receiptModalOrder, closeReceiptModal } = useLaundry();
+  const { receiptModalOrder, closeReceiptModal, settings } = useLaundry();
 
   if (!receiptModalOrder) return null;
 
@@ -45,7 +46,11 @@ export const ThermalReceiptModal: React.FC = () => {
         <div className="thermal-paper" id="printable-receipt">
           {/* Header */}
           <div className="receipt-center-text">
-            <h2 className="receipt-store-name">CLEANWAVE LAUNDRY</h2>
+            {settings.branding.logo && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={settings.branding.logo} alt="" style={{ width: 48, height: 48, objectFit: 'contain', margin: '0 auto 4px', display: 'block', filter: 'grayscale(1)' }} />
+            )}
+            <h2 className="receipt-store-name">{displayBrandName(settings.branding).toUpperCase()}</h2>
             <p className="receipt-store-sub">Premium Laundry & Wet Clean</p>
             <p className="receipt-store-info">Jl. Melati Raya No. 18 • WA: 0812-3456-7890</p>
           </div>

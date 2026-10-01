@@ -104,8 +104,16 @@ export interface ModuleDefinition {
   description: string;
 }
 
+// Identitas & tampilan usaha yang diatur owner
+export interface BrandingSettings {
+  businessName: string;
+  logo: string; // data URL gambar, kosong = pakai ikon bawaan
+  primaryColor: string; // hex, mis. #0052cc
+}
+
 // Pengaturan langganan/fitur per usaha (SaaS): menu aktif, role aktif, dan hak akses per role
 export interface AppSettings {
+  branding: BrandingSettings;
   enabledModules: Record<ModuleTab, boolean>;
   enabledRoles: Record<UserRole, boolean>;
   permissions: Record<UserRole, ModuleTab[]>;

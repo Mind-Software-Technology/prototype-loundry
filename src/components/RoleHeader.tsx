@@ -3,6 +3,8 @@
 import React from 'react';
 import { useLaundry } from '@/context/LaundryContext';
 import { AppTab } from '@/types/laundry';
+import { BrandMark } from './BrandMark';
+import { displayBrandName } from '@/utils/branding';
 
 const TAB_LABEL: Partial<Record<AppTab, string>> = {
   pos: 'Kasir',
@@ -16,7 +18,8 @@ const TAB_LABEL: Partial<Record<AppTab, string>> = {
 
 /** Navbar sederhana untuk semua role — menu hanya menampilkan tab sesuai hak akses. */
 export const RoleHeader: React.FC = () => {
-  const { currentRole, availableRoles, switchRole, todayStats, activeTab, setActiveTab } = useLaundry();
+  const { currentRole, availableRoles, switchRole, todayStats, activeTab, setActiveTab, settings } = useLaundry();
+  const brandName = displayBrandName(settings.branding);
   const roleDef = availableRoles.find((r) => r.id === currentRole);
   const menuTabs = (roleDef?.allowedTabs ?? []).filter((t) => TAB_LABEL[t]);
 
@@ -28,8 +31,8 @@ export const RoleHeader: React.FC = () => {
     <header className="nav-bar">
       <div className="nav-inner">
         <div className="nav-brand">
-          <span className="nav-brand-mark">W</span>
-          <span className="nav-brand-name">Washy <span className="nav-brand-sub">Laundry</span></span>
+          <BrandMark boxClassName="nav-brand-mark" size={34}>{brandName.charAt(0).toUpperCase()}</BrandMark>
+          <span className="nav-brand-name">{brandName}</span>
         </div>
 
         {menuTabs.length > 1 && (
