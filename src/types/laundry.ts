@@ -50,6 +50,7 @@ export interface CartItem {
   perfume?: string;
   notes?: string;
   subtotal: number;
+  isCustom?: boolean; // layanan di luar daftar resmi, diinput manual oleh kasir
 }
 
 export type OrderStatus = 

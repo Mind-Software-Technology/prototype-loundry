@@ -7,6 +7,7 @@ import {
   Order,
   CartItem,
   OrderStatus,
+  UnitType,
   PaymentStatus,
   PaymentMethod,
   UserRole,
@@ -63,6 +64,14 @@ interface LaundryContextType {
   // Cart
   cart: CartItem[];
   addToCart: (service: LaundryService, quantity: number, notes?: string, perfume?: string) => void;
+  addCustomItem: (item: {
+    name: string;
+    unit: UnitType;
+    unitPrice: number;
+    quantity: number;
+    notes: string;
+    perfume?: string;
+  }) => void;
   updateCartItemQty: (cartItemId: string, newQty: number) => void;
   removeFromCart: (cartItemId: string) => void;
   clearCart: () => void;
@@ -262,6 +271,25 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       };
       setCart([...cart, newItem]);
     }
+  };
+
+  // Layanan di luar daftar resmi: selalu baris baru (tidak digabung), tidak masuk master layanan
+  const addCustomItem: LaundryContextType['addCustomItem'] = ({ name, unit, unitPrice, quantity, notes, perfume }) => {
+    const qty = Number(Math.max(0.1, quantity).toFixed(2));
+    const newItem: CartItem = {
+      cartItemId: `cart-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+      serviceId: 'custom',
+      serviceName: name.trim(),
+      category: 'satuan',
+      unit,
+      unitPrice,
+      quantity: qty,
+      perfume: perfume || 'Akasia Floral (Best Seller)',
+      notes: notes.trim(),
+      subtotal: Math.round(unitPrice * qty),
+      isCustom: true,
+    };
+    setCart((prev) => [...prev, newItem]);
   };
 
   const updateCartItemQty = (cartItemId: string, newQty: number) => {
@@ -486,6 +514,7 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updatePaymentStatus,
         cart,
         addToCart,
+        addCustomItem,
         updateCartItemQty,
         removeFromCart,
         clearCart,

@@ -46,10 +46,11 @@ export const ReportView: React.FC = () => {
       byMethod.set(o.paymentMethod, (byMethod.get(o.paymentMethod) || 0) + received(o));
       byDay.set(day, (byDay.get(day) || 0) + received(o));
       o.items.forEach((it) => {
-        const cur = byService.get(it.serviceName) || { qty: 0, unit: it.unit, total: 0 };
+        const label = it.isCustom ? `${it.serviceName} (Custom)` : it.serviceName;
+        const cur = byService.get(label) || { qty: 0, unit: it.unit, total: 0 };
         cur.qty += it.quantity;
         cur.total += it.subtotal;
-        byService.set(it.serviceName, cur);
+        byService.set(label, cur);
       });
     });
 

@@ -6,6 +6,7 @@ import { LaundryService, Customer, ServiceCategory, PaymentMethod, PaymentStatus
 import { formatRupiah } from '@/utils/formatters';
 import { PERFUMES } from '@/data/initialData';
 import { AddItemModal } from './AddItemModal';
+import { CustomItemModal } from './CustomItemModal';
 
 export const PosView: React.FC = () => {
   const { 
@@ -26,6 +27,7 @@ export const PosView: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [modalService, setModalService] = useState<LaundryService | null>(null);
+  const [customModalOpen, setCustomModalOpen] = useState(false);
 
   // Customer State
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(customers[0] || null);
@@ -205,6 +207,13 @@ export const PosView: React.FC = () => {
               </button>
               <button
                 type="button"
+                className="pos-tab-pill"
+                onClick={() => setCustomModalOpen(true)}
+              >
+                + Layanan Lain
+              </button>
+              <button
+                type="button"
                 className={`pos-tab-pill ${selectedCategory === 'kiloan' ? 'active' : ''}`}
                 onClick={() => setSelectedCategory('kiloan')}
               >
@@ -283,6 +292,9 @@ export const PosView: React.FC = () => {
             {filteredServices.length === 0 && (
               <div className="pos-empty-catalog">
                 <p>Tidak ada layanan yang sesuai dengan pencarian "{searchQuery}"</p>
+                <button type="button" className="btn-link-add" onClick={() => setCustomModalOpen(true)}>
+                  + Tambah sebagai Layanan Lain{searchQuery ? ` "${searchQuery}"` : ''}
+                </button>
               </div>
             )}
           </div>
@@ -434,7 +446,10 @@ Keranjang Cucian ({cart.length})
                 cart.map((item) => (
                   <div key={item.cartItemId} className="cart-list-item">
                     <div className="item-details-col">
-                      <strong className="item-title">{item.serviceName}</strong>
+                      <strong className="item-title">
+                        {item.serviceName}
+                        {item.isCustom && <span className="member-code-tag"> Custom</span>}
+                      </strong>
                       <div className="item-sub-meta">
                         <span>{formatRupiah(item.unitPrice)}/{item.unit}</span>
                         {item.perfume && (
@@ -680,6 +695,12 @@ Transfer
           </div>
         </div>
       </div>
+
+      <CustomItemModal
+        open={customModalOpen}
+        initialName={searchQuery}
+        onClose={() => setCustomModalOpen(false)}
+      />
 
       {/* Modal Timbang Berat / Pcs & Parfum */}
       <AddItemModal
