@@ -111,8 +111,8 @@ export interface AppSettings {
   permissions: Record<UserRole, ModuleTab[]>;
 }
 
-// Promo yang dibuat owner: voucher (pakai kode) atau loyalitas (otomatis untuk pelanggan rutin)
-export type PromoKind = 'voucher' | 'loyalty';
+// Promo yang dibuat owner: voucher (pakai kode), loyalitas (pelanggan rutin), atau otomatis (semua pelanggan, tanpa kode)
+export type PromoKind = 'voucher' | 'loyalty' | 'auto';
 export type PromoDiscountType = 'percent' | 'fixed';
 // threshold: berlaku selalu setelah pelanggan punya >= N order; every: berlaku di order ke-N, ke-2N, dst.
 export type LoyaltyMode = 'threshold' | 'every';

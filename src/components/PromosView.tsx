@@ -88,7 +88,7 @@ export const PromosView: React.FC = () => {
       if (promos.some((p) => p.id !== editingId && p.kind === 'voucher' && (p.code ?? '').toUpperCase() === code)) {
         return setError(`Kode "${code}" sudah dipakai voucher lain.`);
       }
-    } else if (form.minOrders < 1) {
+    } else if (form.kind === 'loyalty' && form.minOrders < 1) {
       return setError('Jumlah order minimal 1.');
     }
 
@@ -98,7 +98,7 @@ export const PromosView: React.FC = () => {
       discountType: form.discountType,
       value: form.value,
       active: form.active,
-      ...(form.kind === 'voucher' ? { code } : { minOrders: form.minOrders, loyaltyMode: form.loyaltyMode }),
+      ...(form.kind === 'voucher' ? { code } : form.kind === 'loyalty' ? { minOrders: form.minOrders, loyaltyMode: form.loyaltyMode } : {}),
       ...(form.discountType === 'percent' && form.maxDiscount > 0 ? { maxDiscount: form.maxDiscount } : {}),
       ...(form.minSubtotal > 0 ? { minSubtotal: form.minSubtotal } : {}),
       ...(form.validUntil ? { validUntil: form.validUntil } : {}),
@@ -162,7 +162,7 @@ export const PromosView: React.FC = () => {
                     <strong>{p.name}</strong>
                   </td>
                   <td>
-                    <span className="cat-pill-badge">{p.kind === 'voucher' ? 'VOUCHER' : 'LOYALITAS'}</span>
+                    <span className="cat-pill-badge">{p.kind === 'voucher' ? 'VOUCHER' : p.kind === 'auto' ? 'OTOMATIS' : 'LOYALITAS'}</span>
                   </td>
                   <td>{describePromo(p)}</td>
                   <td>
@@ -234,6 +234,7 @@ export const PromosView: React.FC = () => {
                   onChange={(e) => patch({ kind: e.target.value as PromoKind })}
                   className="form-select"
                 >
+                  <option value="auto">Diskon Otomatis — semua pelanggan, tanpa kode</option>
                   <option value="loyalty">Loyalitas — otomatis untuk pelanggan rutin</option>
                   <option value="voucher">Voucher — kasir memasukkan kode</option>
                 </select>
@@ -250,7 +251,7 @@ export const PromosView: React.FC = () => {
                     className="form-input"
                   />
                 </div>
-              ) : (
+              ) : form.kind === 'loyalty' ? (
                 <div className="form-grid-2">
                   <div className="form-group">
                     <label className="form-label">Jumlah Order (N) *</label>
@@ -274,7 +275,7 @@ export const PromosView: React.FC = () => {
                     </select>
                   </div>
                 </div>
-              )}
+              ) : null}
 
               <div className="form-grid-2">
                 <div className="form-group">

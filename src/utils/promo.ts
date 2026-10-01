@@ -40,6 +40,7 @@ export const findVoucherByCode = (promos: Promo[], code: string): Promo | undefi
 export const describePromo = (p: Promo): string => {
   const val = p.discountType === 'percent' ? `${p.value}%` : `Rp ${p.value.toLocaleString('id-ID')}`;
   if (p.kind === 'voucher') return `Voucher ${p.code} · potongan ${val}`;
+  if (p.kind === 'auto') return `Otomatis untuk semua pelanggan · potongan ${val}`;
   const min = p.minOrders ?? 1;
   return p.loyaltyMode === 'every'
     ? `Setiap order ke-${min} · potongan ${val}`

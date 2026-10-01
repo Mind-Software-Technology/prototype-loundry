@@ -78,7 +78,7 @@ export const PosView: React.FC = () => {
   // Calculations
   const eligiblePromos = useMemo(() => {
     const list = promos.filter(
-      (p) => p.kind === 'loyalty' && !promoIneligibleReason(p, selectedCustomer, cartSubtotal)
+      (p) => p.kind !== 'voucher' && !promoIneligibleReason(p, selectedCustomer, cartSubtotal)
     );
     const voucher = promos.find((p) => p.id === voucherPromoId);
     if (voucher && !promoIneligibleReason(voucher, selectedCustomer, cartSubtotal)) list.push(voucher);
