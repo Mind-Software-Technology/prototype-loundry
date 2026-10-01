@@ -10,6 +10,7 @@ const TAB_LABEL: Partial<Record<AppTab, string>> = {
   report: 'Laporan',
   services: 'Layanan',
   tracking: 'Cek Status',
+  promos: 'Promo',
   settings: 'Pengaturan',
 };
 

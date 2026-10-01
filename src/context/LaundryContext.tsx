@@ -14,6 +14,7 @@ import {
   RoleDefinition,
   AppTab,
   AppSettings,
+  Promo,
 } from '@/types/laundry';
 import { INITIAL_SERVICES, INITIAL_CUSTOMERS, INITIAL_ORDERS, DEFAULT_SETTINGS, resolveRoles } from '@/data/initialData';
 
@@ -40,6 +41,12 @@ interface LaundryContextType {
   updateService: (id: string, service: Partial<LaundryService>) => void;
   deleteService: (id: string) => void;
 
+  // Promo & Voucher (dikelola owner)
+  promos: Promo[];
+  addPromo: (promo: Omit<Promo, 'id'>) => void;
+  updatePromo: (id: string, promo: Partial<Promo>) => void;
+  deletePromo: (id: string) => void;
+
   // Customers
   customers: Customer[];
   addCustomer: (customer: Omit<Customer, 'id' | 'memberCode' | 'totalOrders' | 'totalSpent'>) => Customer;
@@ -57,6 +64,8 @@ interface LaundryContextType {
     perfume: string;
     specialNotes?: string;
     estimatedReadyHours?: number;
+    promoName?: string;
+    promoDiscount?: number;
   }) => Order;
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   updatePaymentStatus: (orderId: string, paymentStatus: PaymentStatus, paidAmount?: number) => void;
@@ -123,6 +132,7 @@ const STORAGE_KEYS = {
   ORDERS: 'laundry_pos_orders_v1',
   ROLE: 'laundry_pos_role_v1',
   SETTINGS: 'laundry_pos_settings_v1',
+  PROMOS: 'laundry_pos_promos_v1',
 };
 
 export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -133,6 +143,7 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [services, setServices] = useState<LaundryService[]>(INITIAL_SERVICES);
   const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
+  const [promos, setPromos] = useState<Promo[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [receiptModalOrder, setReceiptModalOrder] = useState<Order | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -148,6 +159,9 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       const savedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS);
       if (savedOrders) setOrders(JSON.parse(savedOrders));
+
+      const savedPromos = localStorage.getItem(STORAGE_KEYS.PROMOS);
+      if (savedPromos) setPromos(JSON.parse(savedPromos));
 
       const savedRole = localStorage.getItem(STORAGE_KEYS.ROLE);
       let loadedSettings = DEFAULT_SETTINGS;
@@ -200,6 +214,15 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.error('Error saving orders', e);
     }
   }, [orders, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      localStorage.setItem(STORAGE_KEYS.PROMOS, JSON.stringify(promos));
+    } catch (e) {
+      console.error('Error saving promos', e);
+    }
+  }, [promos, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -344,6 +367,19 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const findCustomerById = (id: string) => customers.find((c) => c.id === id);
 
+  // Promo operations
+  const addPromo = (promoData: Omit<Promo, 'id'>) => {
+    setPromos((prev) => [...prev, { ...promoData, id: `promo-${Date.now()}` }]);
+  };
+
+  const updatePromo = (id: string, fields: Partial<Promo>) => {
+    setPromos((prev) => prev.map((p) => (p.id === id ? { ...p, ...fields } : p)));
+  };
+
+  const deletePromo = (id: string) => {
+    setPromos((prev) => prev.filter((p) => p.id !== id));
+  };
+
   // Service operations
   const addService = (serviceData: Omit<LaundryService, 'id'>) => {
     const newService: LaundryService = {
@@ -374,6 +410,8 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     perfume: string;
     specialNotes?: string;
     estimatedReadyHours?: number;
+    promoName?: string;
+    promoDiscount?: number;
   }): Order => {
     const now = new Date();
     const orderDateStr = now.toISOString().replace('T', ' ').substring(0, 16);
@@ -411,6 +449,7 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       perfume: orderData.perfume,
       specialNotes: orderData.specialNotes || '',
       cashierName: 'Kasir - LaundryCare',
+      ...(orderData.promoName ? { promoName: orderData.promoName, promoDiscount: orderData.promoDiscount || 0 } : {}),
     };
 
     // Update customer stats
@@ -505,6 +544,10 @@ export const LaundryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addService,
         updateService,
         deleteService,
+        promos,
+        addPromo,
+        updatePromo,
+        deletePromo,
         customers,
         addCustomer,
         findCustomerById,

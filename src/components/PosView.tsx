@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useLaundry } from '@/context/LaundryContext';
 import { LaundryService, Customer, ServiceCategory, PaymentMethod, PaymentStatus } from '@/types/laundry';
 import { formatRupiah } from '@/utils/formatters';
+import { calcPromoDiscount, describePromo, findVoucherByCode, promoIneligibleReason } from '@/utils/promo';
 import { PERFUMES } from '@/data/initialData';
 import { AddItemModal } from './AddItemModal';
 import { CustomItemModal } from './CustomItemModal';
@@ -11,6 +12,7 @@ import { CustomItemModal } from './CustomItemModal';
 export const PosView: React.FC = () => {
   const { 
     services, 
+    promos,
     customers, 
     addCustomer, 
     cart, 
@@ -43,6 +45,10 @@ export const PosView: React.FC = () => {
   const [globalPerfume, setGlobalPerfume] = useState(PERFUMES[0]);
   const [specialNotes, setSpecialNotes] = useState('');
   const [discountAmount, setDiscountAmount] = useState<number>(0);
+  const [promoChoice, setPromoChoice] = useState<string | undefined>(undefined); // undefined = otomatis (terbaik), 'none' = tanpa promo
+  const [voucherInput, setVoucherInput] = useState('');
+  const [voucherPromoId, setVoucherPromoId] = useState<string | null>(null);
+  const [voucherMsg, setVoucherMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('paid');
   const [cashPaidAmount, setCashPaidAmount] = useState<number>(0);
@@ -70,7 +76,24 @@ export const PosView: React.FC = () => {
   }, [customers, customerSearch]);
 
   // Calculations
-  const finalTotal = Math.max(0, cartSubtotal - discountAmount);
+  const eligiblePromos = useMemo(() => {
+    const list = promos.filter(
+      (p) => p.kind === 'loyalty' && !promoIneligibleReason(p, selectedCustomer, cartSubtotal)
+    );
+    const voucher = promos.find((p) => p.id === voucherPromoId);
+    if (voucher && !promoIneligibleReason(voucher, selectedCustomer, cartSubtotal)) list.push(voucher);
+    return list;
+  }, [promos, selectedCustomer, cartSubtotal, voucherPromoId]);
+
+  const bestPromo = eligiblePromos.reduce<(typeof eligiblePromos)[number] | null>(
+    (best, p) => (!best || calcPromoDiscount(p, cartSubtotal) > calcPromoDiscount(best, cartSubtotal) ? p : best),
+    null
+  );
+  const appliedPromo =
+    promoChoice === 'none' ? null : eligiblePromos.find((p) => p.id === promoChoice) ?? bestPromo;
+  const promoDiscount = appliedPromo ? calcPromoDiscount(appliedPromo, cartSubtotal) : 0;
+  const totalDiscount = Math.min(cartSubtotal, promoDiscount + discountAmount);
+  const finalTotal = Math.max(0, cartSubtotal - totalDiscount);
   const changeAmount = Math.max(0, cashPaidAmount - finalTotal);
 
 
@@ -99,6 +122,23 @@ export const PosView: React.FC = () => {
     setNewCustPhone('');
     setNewCustAddress('');
     setCustomerSearch('');
+  };
+
+  const handleApplyVoucher = () => {
+    const voucher = findVoucherByCode(promos, voucherInput);
+    if (!voucher) {
+      setVoucherMsg({ ok: false, text: 'Kode voucher tidak ditemukan.' });
+      return;
+    }
+    const reason = promoIneligibleReason(voucher, selectedCustomer, cartSubtotal);
+    if (reason) {
+      setVoucherMsg({ ok: false, text: reason });
+      return;
+    }
+    setVoucherPromoId(voucher.id);
+    setPromoChoice(voucher.id);
+    setVoucherMsg({ ok: true, text: `Voucher ${voucher.name} dipakai.` });
+    setVoucherInput('');
   };
 
   // Quick Cash Preset
@@ -135,7 +175,9 @@ export const PosView: React.FC = () => {
     const newOrder = createOrder({
       customer: selectedCustomer,
       items: cart,
-      discount: discountAmount,
+      discount: totalDiscount,
+      promoName: appliedPromo?.name,
+      promoDiscount: appliedPromo ? promoDiscount : undefined,
       paidAmount: paid,
       paymentMethod,
       paymentStatus,
@@ -146,6 +188,9 @@ export const PosView: React.FC = () => {
 
     setSpecialNotes('');
     setDiscountAmount(0);
+    setPromoChoice(undefined);
+    setVoucherPromoId(null);
+    setVoucherMsg(null);
     setCashPaidAmount(0);
     openReceiptModal(newOrder);
   };
@@ -561,6 +606,65 @@ Keranjang Cucian ({cart.length})
               <span>Subtotal</span>
               <strong>{formatRupiah(cartSubtotal)}</strong>
             </div>
+
+            {/* Promo & Voucher */}
+            <div className="payment-options-block">
+              <span className="opt-title">Promo / Voucher:</span>
+              <div className="cust-actions-row">
+                <input
+                  type="text"
+                  value={voucherInput}
+                  onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleApplyVoucher();
+                    }
+                  }}
+                  placeholder="Kode voucher"
+                  className="terminal-input"
+                />
+                <button type="button" className="btn-save-cust-sm" onClick={handleApplyVoucher}>
+                  Pakai
+                </button>
+              </div>
+              {voucherMsg && (
+                <small className={voucherMsg.ok ? 'text-green' : 'text-red'}>{voucherMsg.text}</small>
+              )}
+              {eligiblePromos.length > 0 && (
+                <div className="promo-choice-list">
+                  {eligiblePromos.map((p) => (
+                    <label key={p.id} className="promo-choice">
+                      <input
+                        type="radio"
+                        name="promo-choice"
+                        checked={appliedPromo?.id === p.id}
+                        onChange={() => setPromoChoice(p.id)}
+                      />{' '}
+                      <span>
+                        <strong>{p.name}</strong> — {describePromo(p)} (−{formatRupiah(calcPromoDiscount(p, cartSubtotal))})
+                      </span>
+                    </label>
+                  ))}
+                  <label className="promo-choice">
+                    <input
+                      type="radio"
+                      name="promo-choice"
+                      checked={appliedPromo === null}
+                      onChange={() => setPromoChoice('none')}
+                    />{' '}
+                    <span>Tanpa promo</span>
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {appliedPromo && (
+              <div className="summary-line">
+                <span>Potongan Promo ({appliedPromo.name})</span>
+                <strong className="text-green">-{formatRupiah(promoDiscount)}</strong>
+              </div>
+            )}
 
             <div className="summary-line">
               <span>Diskon (Rp)</span>

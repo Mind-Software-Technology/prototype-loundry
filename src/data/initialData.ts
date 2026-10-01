@@ -54,7 +54,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
 ];
 
 // Urutan menu di navbar
-export const TAB_ORDER: AppTab[] = ['report', 'pos', 'orders', 'services', 'tracking', 'settings'];
+export const TAB_ORDER: AppTab[] = ['report', 'pos', 'orders', 'services', 'tracking', 'promos', 'settings'];
 
 const isModule = (t: AppTab): t is ModuleTab => MODULE_DEFINITIONS.some((m) => m.id === t);
 
@@ -71,7 +71,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
 export const resolveRoles = (settings: AppSettings): RoleDefinition[] =>
   ROLE_DEFINITIONS.filter((r) => r.id === 'owner' || settings.enabledRoles[r.id]).flatMap((r) => {
     const modules = (settings.permissions[r.id] ?? []).filter((m) => settings.enabledModules[m]);
-    const tabs: AppTab[] = r.id === 'owner' ? [...modules, 'settings'] : modules;
+    const tabs: AppTab[] = r.id === 'owner' ? [...modules, 'promos', 'settings'] : modules;
     const allowedTabs = TAB_ORDER.filter((t) => tabs.includes(t));
     if (allowedTabs.length === 0) return [];
     return [{ ...r, allowedTabs, defaultTab: allowedTabs.includes(r.defaultTab) ? r.defaultTab : allowedTabs[0] }];

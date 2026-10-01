@@ -1,6 +1,6 @@
 export type UserRole = 'owner' | 'kasir' | 'kurir' | 'pelanggan';
 
-export type AppTab = 'landing' | 'pos' | 'orders' | 'customers' | 'services' | 'tracking' | 'report' | 'settings';
+export type AppTab = 'landing' | 'pos' | 'orders' | 'customers' | 'services' | 'tracking' | 'report' | 'promos' | 'settings';
 
 export interface RoleDefinition {
   id: UserRole;
@@ -91,6 +91,8 @@ export interface Order {
   specialNotes?: string;
   cashierName: string;
   completedAt?: string;
+  promoName?: string; // promo/voucher yang dipakai (sudah termasuk di `discount`)
+  promoDiscount?: number;
 }
 
 // Menu (modul) yang bisa diaktifkan/dinonaktifkan oleh owner
@@ -107,4 +109,25 @@ export interface AppSettings {
   enabledModules: Record<ModuleTab, boolean>;
   enabledRoles: Record<UserRole, boolean>;
   permissions: Record<UserRole, ModuleTab[]>;
+}
+
+// Promo yang dibuat owner: voucher (pakai kode) atau loyalitas (otomatis untuk pelanggan rutin)
+export type PromoKind = 'voucher' | 'loyalty';
+export type PromoDiscountType = 'percent' | 'fixed';
+// threshold: berlaku selalu setelah pelanggan punya >= N order; every: berlaku di order ke-N, ke-2N, dst.
+export type LoyaltyMode = 'threshold' | 'every';
+
+export interface Promo {
+  id: string;
+  name: string;
+  kind: PromoKind;
+  code?: string; // khusus voucher, disimpan huruf besar
+  minOrders?: number; // khusus loyalitas
+  loyaltyMode?: LoyaltyMode; // khusus loyalitas
+  discountType: PromoDiscountType;
+  value: number; // persen (1-100) atau nominal Rupiah
+  maxDiscount?: number; // batas potongan untuk tipe persen
+  minSubtotal?: number; // minimal belanja
+  validUntil?: string; // yyyy-mm-dd, kosong = tanpa batas
+  active: boolean;
 }

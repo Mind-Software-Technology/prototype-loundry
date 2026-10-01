@@ -142,7 +142,7 @@ export const ThermalReceiptModal: React.FC = () => {
 
             {order.discount > 0 && (
               <div className="total-line">
-                <span>Diskon:</span>
+                <span>Diskon{order.promoName ? ` (${order.promoName})` : ''}:</span>
                 <span>-{formatRupiah(order.discount)}</span>
               </div>
             )}

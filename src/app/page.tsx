@@ -13,6 +13,7 @@ import { ReportView } from '@/components/ReportView';
 import { SettingsView } from '@/components/SettingsView';
 import { RoleHeader } from '@/components/RoleHeader';
 import { TrackingView } from '@/components/TrackingView';
+import { PromosView } from '@/components/PromosView';
 
 export default function Home() {
   const { activeTab, currentRole, availableRoles } = useLaundry();
@@ -36,6 +37,7 @@ export default function Home() {
       <main className="main-content-body">
         {safeTab === 'tracking' && <TrackingView />}
         {safeTab === 'report' && <ReportView />}
+        {safeTab === 'promos' && <PromosView />}
         {safeTab === 'settings' && <SettingsView />}
         {safeTab === 'landing' && <WashyLanding />}
         {safeTab === 'pos' && (
